@@ -1,7 +1,3 @@
-# 神经网络实验报告
-
-复旦大学 王少文 大二
-
 ```python
 import matplotlib.pyplot as plt
 import numpy as np
@@ -44,9 +40,9 @@ ax.set_zlabel("z")
 
 
 
-​    
+    
 ![png](output_4_1.png)
-​    
+    
 
 
 ### 线性回归模型训练
@@ -100,14 +96,14 @@ ax.plot(mlm_data.x, mlm_data.y, predicted_z, c="red", alpha=0.6)
 
 
 
-    [<mpl_toolkits.mplot3d.art3d.Line3D at 0x116ef4820>]
+    [<mpl_toolkits.mplot3d.art3d.Line3D at 0x12984d6d0>]
 
 
 
 
-​    
+    
 ![png](output_10_1.png)
-​    
+    
 
 
 #### 最后，我们计算数据的平均绝对值差来评估模型
@@ -147,7 +143,7 @@ iris_data.head()
     .dataframe tbody tr th {
         vertical-align: top;
     }
-    
+
     .dataframe thead th {
         text-align: right;
     }
@@ -212,6 +208,8 @@ iris_data.head()
 
 #### 数据预处理
 
+并分出测试集和训练集
+
 
 ```python
 def get_class(name: str):
@@ -264,12 +262,27 @@ iris_data.hist()
 
 
 
-​    
+    
 ![png](output_16_1.png)
-​    
+    
 
 
 #### 下面写多分类神经网络
+
+
+```python
+from sklearn.preprocessing import normalize
+from sklearn.model_selection import train_test_split
+```
+
+
+```python
+x_data = iris_data[["sepal length", "sepal width", "petal length","petal width"]].to_numpy()
+y_data = iris_data[["is0", "is1", "is2"]].to_numpy()
+x_data = normalize(X=x_data, axis=1)
+y_data = normalize(X=y_data, axis=1)
+x_train, x_test, y_train, y_test = train_test_split(x_data,y_data,test_size=0.33,random_state=0)
+```
 
 
 ```python
@@ -288,19 +301,6 @@ def back_sigmoid(y):
 def softmax(x):
     e_x = np.exp(x - np.max(x))
     return (e_x.T/e_x.sum(axis=1)).T
-```
-
-
-```python
-from sklearn.preprocessing import normalize
-```
-
-
-```python
-x_data = iris_data[["sepal length", "sepal width", "petal length","petal width"]].to_numpy()
-y_data = iris_data[["is0", "is1", "is2"]].to_numpy()
-x_data = normalize(X=x_data, axis=1)
-y_data = normalize(X=y_data, axis=1)
 ```
 
 
@@ -338,7 +338,7 @@ class multi_classifier:
         self.w2 -= lr * self.dw2
         self.b2 -= lr * self.db2
 
-    def train(self, x, y, lr=0.2, batch_size=10, max_epoch=10000, max_iteration=100,times=100):
+    def train(self, x, y, lr=0.1, batch_size=10, max_epoch=10000, max_iteration=100,times=100):
         loss = 0
         for epoch in range(max_epoch):
             m = x.shape[0]
@@ -356,7 +356,7 @@ class multi_classifier:
             if epoch%times==0:
                 self.loss_arr.append(cross_entropy(y_data,self.forward(x_data)).sum())
 model = multi_classifier(4, 10, 3)
-model.train(x_data, y_data)
+model.train(x_train, y_train)
 ```
 
 
@@ -375,26 +375,26 @@ plt.xlabel("Epochs")
 
 
 
-​    
+    
 ![png](output_22_1.png)
-​    
+    
 
 
 #### 由上图可以看出，该神经网络已经能取得比较好的收敛效果，loss稳定在较低的水平，下面计算准确率
 
 
 ```python
-y_predict=model.forward(x_data)
+y_predict=model.forward(x_test)
 y_predict=np.around(y_predict)
-y_iferror = np.abs(y_predict-y_data).sum(axis=0)
+y_iferror = np.abs(y_predict-y_test).sum(axis=0)
 error_rate = y_iferror/y_data.shape[0]
 for i in range(3):
     print(f"model has the accuracy rate of {(1-error_rate)[i]:0.3} in predicting class {i+1}")
 ```
 
     model has the accuracy rate of 1.0 in predicting class 1
-    model has the accuracy rate of 0.967 in predicting class 2
-    model has the accuracy rate of 0.967 in predicting class 3
+    model has the accuracy rate of 0.987 in predicting class 2
+    model has the accuracy rate of 0.987 in predicting class 3
 
 
-可见，该模型也有较高的准确率
+可见，该模型有较高的准确率
